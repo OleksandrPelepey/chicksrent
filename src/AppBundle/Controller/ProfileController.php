@@ -12,12 +12,11 @@ class ProfileController extends Controller
 {
     /**
      * @Route("/profile/{user}", name="profile")
-     * @Security("has_role('ROLE_USER')")
      */
     public function indexAction(User $user = null)
     {
-        if ($user === null) {
-            $user = $this->getUser();
+        if (null === $user && null === $user = $this->getUser()) {
+            return $this->redirectToRoute( 'login');
         }
 
         return $this->render('@App/Profile/index.html.twig', array(
@@ -26,21 +25,27 @@ class ProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/edit/{user_id}", name="editProfile", defaults={"user"=null})
+     * @Route("/profile/edit/{user_id}", name="editProfile")
+     * @Security("(user && (user.getId() == user_id)) || has_role('ROLE_ADMIN')")
      */
     public function editAction($user_id = null)
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
         $currentUser = $this->getUser();
-        $entityManager = $this->getDoctrine()->getManager();
 
-        if ($user_id === null) {
+        if ($user_id === null || $user_id == $currentUser->getId()) {
             $user = $currentUser;
         } else {
-            $this->denyAccessUnlessGranted('ROLE_ADMIN');
+            $entityManager = $this->getDoctrine()->getManager();
 
-            $user = $entityManager->getRepository(User::class)
+            $user = $entityManager
+                ->getRepository(User::class)
+                ->findOneBy([
+                    'id' => $user_id
+                ]);
+        }
+
+        if ($user === null) {
+            throw $this->createNotFoundUserExpertion($user_id);
         }
 
         return $this->render('@App/Profile/index.html.twig', array(
@@ -48,4 +53,7 @@ class ProfileController extends Controller
         ));
     }
 
+    protected function createNotFoundUserExpertion($user_id) {
+        return $this->createNotFoundException(sprintf('User with id %d was not found', $user_id));
+    }
 }
