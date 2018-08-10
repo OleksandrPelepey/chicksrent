@@ -34,7 +34,9 @@ class UserType extends AbstractType
                 'mapped' => false,
                 'constraints' => new IsTrue()
             ));
-    }/**
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function configureOptions(OptionsResolver $resolver)
@@ -51,6 +53,4 @@ class UserType extends AbstractType
     {
         return 'reg_form';
     }
-
-
 }

@@ -7,6 +7,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+use AppBundle\Entity\Chick;
+
 /**
  * User
  *
@@ -74,18 +76,17 @@ class User implements UserInterface, \Serializable
     private $roles;
 
 
+    /**
+     * @var
+     *
+     * @ORM\OneToMany(targetEntity="Chick", mappedBy="owner")
+     */
+    private $chicks;
+
+
     public function __construct() {
         $this->isActive = true;
         $this->roles = array('ROLE_USER');
-    }
-
-    public function getRoles()
-    {
-        return $this->roles;
-    }
-
-    public function setRoles($roles) {
-        $this->roles = $roles;
     }
 
     public function getSalt()
@@ -228,6 +229,23 @@ class User implements UserInterface, \Serializable
     public function getIsActive()
     {
         return $this->isActive;
+    }
+
+    public function getRoles()
+    {
+        return $this->roles;
+    }
+
+    public function setRoles($roles) {
+        $this->roles = $roles;
+    }
+
+    public function getChicks() {
+        return $this->chicks;
+    }
+
+    public function setChicks($chicks) {
+        $this->chicks = $chicks;
     }
 }
 

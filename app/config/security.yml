@@ -23,6 +23,7 @@ security:
             form-login:
                 login-path: login
                 check-path: login
+                default_target_path: myProfile
             logout:
                 path:   logout
                 target: homepage

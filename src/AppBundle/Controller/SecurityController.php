@@ -4,6 +4,7 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\User;
 use AppBundle\Form\UserType;
+use AppBundle\Form\ResetPassword;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +22,6 @@ class SecurityController extends Controller
     {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
-//        $passwordEncoder = $this->get('security.password_encoder');
 
         $form->handleRequest($request);
 
@@ -33,7 +33,7 @@ class SecurityController extends Controller
             $entityManager->persist($user);
             $entityManager->flush();
 
-            return $this->redirectToRoute('homepage');
+            return $this->redirectToRoute('login');
         }
 
         return $this->render('@App/SecurityController/register_user.html.twig', array(
@@ -58,12 +58,36 @@ class SecurityController extends Controller
     }
 
     /**
+     * @Route("/approve-email/send", name="sendApproveEmailKey")
+     */
+    public function sendApproveEmailKeyAction($approveKey)
+    {
+        return $this->render('@App/SecurityController/reset_password.html.twig', array(
+            // ...
+        ));
+    }
+
+    /**
+     * @Route("/approve-email/{approveKey}", name="approveEmail")
+     */
+    public function approveEmailAction($approveKey)
+    {
+        return $this->render('@App/SecurityController/reset_password.html.twig', array(
+            // ...
+        ));
+    }
+
+    /**
      * @Route("/reset-password", name="resetPassword")
      */
     public function resetPasswordAction(Request $request)
     {
+        $form = $this->createForm(ResetPassword::class);
+
+        $form->handleRequest($request);
+
         return $this->render('@App/SecurityController/reset_password.html.twig', array(
-            // ...
+            'form' => $form->createView()
         ));
     }
 }
