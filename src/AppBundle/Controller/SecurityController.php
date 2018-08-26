@@ -5,9 +5,11 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\User;
 use AppBundle\Form\UserType;
 use AppBundle\Form\ResetPassword;
+use AppBundle\Utils\TokensGenerator;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
@@ -18,8 +20,11 @@ class SecurityController extends Controller
      * @Route("/register", name="register")
      *
      */
-    public function registerUserAction(Request $request, UserPasswordEncoderInterface $passwordEncoder)
-    {
+    public function registerUserAction(
+        Request $request,
+        TokensGenerator $tokenGenerator,
+        UserPasswordEncoderInterface $passwordEncoder
+    ) {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
 
@@ -29,9 +34,17 @@ class SecurityController extends Controller
             $password = $passwordEncoder->encodePassword($user, $user->getPlainPassword());
             $user->setPassword($password);
 
+            $user->setConfirationToken( $tokenGenerator->generateToken() );
+
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($user);
             $entityManager->flush();
+
+            $this->sendAccountConfirmationMail($user);
+            
+            $this->container->get('session')->getFlashBag()->add('success', '
+                Check your email addres for confirmation letter.
+            ');
 
             return $this->redirectToRoute('login');
         }
@@ -89,5 +102,26 @@ class SecurityController extends Controller
         return $this->render('@App/SecurityController/reset_password.html.twig', array(
             'form' => $form->createView()
         ));
+    }
+
+    protected function sendAccountConfirmationMail(User $user)
+    {
+        $mailer = $this->container->get('swiftmailer.mailer.default');
+
+        $message = ( new \Swift_Message('Account email confirmation.') )
+            ->setTo( $user->getEmail() )
+            ->setSender( $this->container->getParameter('swiftmailer.sender_address') )
+            ->setBody(
+                $this->renderView('Emails/confirm-email.html.twig', [
+                    'confiramtion_link' => $this->generateUrl('approveEmail', [
+                        'approveKey' => $user->getConfiramtionToken()
+                    ], UrlGeneratorInterface::ABSOLUTE_URL)
+                ]),
+                'text/html'
+            );
+
+        $res = $mailer->send($message);
+
+        return $res;
     }
 }

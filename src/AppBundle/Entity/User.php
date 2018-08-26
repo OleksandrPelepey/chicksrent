@@ -69,6 +69,31 @@ class User implements UserInterface, \Serializable
     private $isActive;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(name="is_confirmed", type="boolean")
+     */
+    private $isConfirmed;
+
+    /**
+     * @var
+     * @ORM\Column(name="confirmation_token", type="string", length=254, nullable=true)
+     */
+    private $confirmationToken;
+
+    /**
+     * @var
+     * @ORM\Column(name="reset_password_token", type="string", length=254, nullable=true)
+     */
+    private $resetPasswordToken;
+
+    /**
+     * @var
+     * @ORM\Column(name="reset_password_due_date", type="datetime", nullable=true)
+     */
+    private $resetPasswordDueDate;
+
+    /**
      * @var
      *
      * @ORM\Column(type="array")
@@ -83,8 +108,11 @@ class User implements UserInterface, \Serializable
      */
     private $chicks;
 
-
+    /**
+     * User constructor.
+     */
     public function __construct() {
+        $this->isConfirmed = false;
         $this->isActive = true;
         $this->roles = array('ROLE_USER');
     }
@@ -175,11 +203,19 @@ class User implements UserInterface, \Serializable
         return $this->password;
     }
 
-    public function getPlainPassword() {
+    /**
+     * @return mixed
+     */
+    public function getPlainPassword()
+    {
         return $this->plainPassword;
     }
 
-    public function setPlainPassword($password) {
+    /**
+     * @param $password
+     */
+    public function setPlainPassword($password)
+    {
         $this->plainPassword = $password;
     }
 
@@ -231,20 +267,109 @@ class User implements UserInterface, \Serializable
         return $this->isActive;
     }
 
+    /**
+     * @return bool
+     */
+    public function isConfirmed()
+    {
+        return $this->isConfirmed;
+    }
+
+    /**
+     * @return array
+     */
+    public function setIsConfirmed($isConfirmed)
+    {
+        $this->isConfirmed = (bool) $isConfirmed;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getConfiramtionToken()
+    {
+        return $this->confirmationToken;
+    }
+
+    /**
+     * @param $token
+     * @return $this
+     */
+    public function setConfirationToken($token)
+    {
+        $this->confirmationToken = $token;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getResetPasswordToken()
+    {
+        return $this->resetPasswordToken;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getResetPasswordDueDate()
+    {
+        return $this->resetPasswordDueDate;
+    }
+
+    /**
+     * @param \DateTime $dateTime
+     * @return $this
+     */
+    public function setResetPasswordDueDate(\DateTime $dateTime)
+    {
+        $this->resetPasswordDueDate = $dateTime;
+
+        return $this;
+    }
+
+    /**
+     * @param $token
+     * @return $this
+     */
+    public function setResetPasswordToken($token) {
+        $this->resetPasswordToken = $token;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
     public function getRoles()
     {
         return $this->roles;
     }
 
-    public function setRoles($roles) {
+    /**
+     * @param $roles
+     */
+    public function setRoles($roles)
+    {
         $this->roles = $roles;
     }
 
-    public function getChicks() {
+    /**
+     * @return mixed
+     */
+    public function getChicks()
+    {
         return $this->chicks;
     }
 
-    public function setChicks($chicks) {
+    /**
+     * @param $chicks
+     */
+    public function setChicks($chicks)
+    {
         $this->chicks = $chicks;
     }
 }

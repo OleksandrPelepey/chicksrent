@@ -17,8 +17,9 @@ security:
         - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
 
     firewalls:
-        secured_area:
+        main:
             pattern: ^/
+            user_checker: AppBundle\Security\UserConfirmedChecker
             anonymous: true
             form-login:
                 login-path: login
