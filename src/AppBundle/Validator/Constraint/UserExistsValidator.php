@@ -40,8 +40,6 @@ class UserExistsValidator extends ConstraintValidator
 
     public function __construct(ContainerInterface $container, LoggerInterface $logger)
     {
-        $logger->info(self::class . ' instnce was created.');
-
         $this->container = $container;
     }
 

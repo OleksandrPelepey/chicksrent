@@ -17,8 +17,14 @@ security:
         - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
 
     firewalls:
+        # disables authentication for assets and the profiler, adapt it according to your needs
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
         main:
             pattern: ^/
+            anonymous: ~
             user_checker: AppBundle\Security\UserConfirmedChecker
             anonymous: true
             form-login:
@@ -28,14 +34,6 @@ security:
             logout:
                 path:   logout
                 target: homepage
-
-        # disables authentication for assets and the profiler, adapt it according to your needs
-        dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/
-            security: false
-
-        main:
-            anonymous: ~
             # activate different ways to authenticate
 
             # https://symfony.com/doc/current/security.html#a-configuring-how-your-users-will-authenticate

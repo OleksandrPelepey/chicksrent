@@ -81,10 +81,18 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/approve-email/{approveKey}", name="approveEmail")
+     * @Route("/confirm-email/{approveKey}", name="approveEmail")
      */
     public function approveEmailAction($approveKey)
     {
+        $entityManger = $this->getDoctrine();
+
+        $user = $entityManger
+            ->getRepository(User::class)
+            ->findOneBy('confirmation_token', $approveKey);
+
+
+
         return $this->render('@App/SecurityController/reset_password.html.twig', array(
             // ...
         ));
