@@ -23,10 +23,17 @@ class ProfileController extends Controller
 
     /**
      * @Route("/profile", name="myProfile")
-     * @Method({"GET", "POST"})
      */
     public function getMyProfileAction() {
+        $user = $this->getUser();
 
+        if ($user) {
+            return $this->render('@App/Profile/index.html.twig', array(
+                'user' => $user
+            ));
+        }
+
+        return $this->redirectToRoute('login');
     }
 
     /**

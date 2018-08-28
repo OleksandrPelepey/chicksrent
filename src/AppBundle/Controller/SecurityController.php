@@ -71,16 +71,6 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/approve-email/send", name="sendApproveEmailKey")
-     */
-    public function sendApproveEmailKeyAction($approveKey)
-    {
-        return $this->render('@App/SecurityController/reset_password.html.twig', array(
-            // ...
-        ));
-    }
-
-    /**
      * @Route("/confirm-email/{approveKey}", name="approveEmail")
      */
     public function approveEmailAction($approveKey)
@@ -89,27 +79,70 @@ class SecurityController extends Controller
 
         $user = $entityManger
             ->getRepository(User::class)
-            ->findOneBy('confirmation_token', $approveKey);
+            ->findOneBy([
+                'confirmationToken' => $approveKey
+            ]);
 
+        if ($user) {
+            $user->setIsConfirmed(true);
+            $user->setConfirationToken(null);
+            $entityManger->getManager()->flush();
 
+            return $this->render('@App/SecurityController/confirmed_email.html.twig');
+        }
 
-        return $this->render('@App/SecurityController/reset_password.html.twig', array(
-            // ...
-        ));
+        throw $this->createNotFoundException('Such key does not exist.');
     }
 
     /**
-     * @Route("/reset-password", name="resetPassword")
+     * @Route("/reset-password/{resetPasswordToken}", name="resetPassword")
      */
-    public function resetPasswordAction(Request $request)
+    public function resetPasswordAction(Request $request, $resetPasswordToken)
+    {
+    }
+
+    /**
+     * @Route("/reset-password", name="resetPasswordForm")
+     */
+    public function resetPasswordFormAction(Request $request, $resetPasswordToken = null)
     {
         $form = $this->createForm(ResetPassword::class);
-
         $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user = $this->getDoctrine()
+                ->getRepository(User::class)
+                ->loadUserByUsername( $form->getData()['user_identifier'] );
+
+            $this->sendResetPasswordEmail($user);
+
+            return $this->render('@App/SecurityController/reset_password_send.html.twig');
+        }
 
         return $this->render('@App/SecurityController/reset_password.html.twig', array(
             'form' => $form->createView()
         ));
+    }
+
+    protected function sendResetPasswordEmail(User $user)
+    {
+        $mailer = $this->container->get('swiftmailer.mailer.default');
+
+        $message = ( new \Swift_Message('Reset password.') )
+            ->setTo( $user->getEmail() )
+            ->setSender( $this->container->getParameter('swiftmailer.sender_address') )
+            ->setBody(
+                $this->renderView('Emails/reset-password.html.twig', [
+                    'reset_password_link' => $this->generateUrl('resetPassword', [
+                        'resetPasswordToken' => $user->getResetPasswordToken()
+                    ], UrlGeneratorInterface::ABSOLUTE_URL)
+                ]),
+                'text/html'
+            );
+
+        $res = $mailer->send($message);
+
+        return $res;
     }
 
     protected function sendAccountConfirmationMail(User $user)
