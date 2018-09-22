@@ -14,8 +14,8 @@ use AppBundle\Entity\Chick;
  *
  * @ORM\Table(name="app_users")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\UserRepository")
- * @UniqueEntity(fields="email", message="Email already token")
- * @UniqueEntity(fields="username", message="Username already token")
+ * @UniqueEntity(fields="email", message="Email already is taken")
+ * @UniqueEntity(fields="username", message="Username already is taken")
  */
 class User implements UserInterface, \Serializable
 {

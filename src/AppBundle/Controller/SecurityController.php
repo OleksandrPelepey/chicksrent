@@ -71,31 +71,24 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/approve-email/send", name="sendApproveEmailKey")
-     */
-    public function sendApproveEmailKeyAction($approveKey)
-    {
-        return $this->render('@App/SecurityController/reset_password.html.twig', array(
-            // ...
-        ));
-    }
-
-    /**
      * @Route("/confirm-email/{approveKey}", name="approveEmail")
      */
     public function approveEmailAction($approveKey)
     {
-        $entityManger = $this->getDoctrine();
+        $entityManger = $this->getDoctrine()->getManager();
+        $repository = $this->getDoctrine()->getRepository(User::class);
 
-        $user = $entityManger
-            ->getRepository(User::class)
-            ->findOneBy('confirmation_token', $approveKey);
+        $user = $repository->findOneBy([
+            'confirmation_token' => $approveKey
+        ]);
 
+        if (!$user) {
+            $user->setIsConfirmed(true);
+            $entityManger->flush();
+        }
+        
 
-
-        return $this->render('@App/SecurityController/reset_password.html.twig', array(
-            // ...
-        ));
+        return $this->render('@App/SecurityController/email_confirmed.html.twig');
     }
 
     /**

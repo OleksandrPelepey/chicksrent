@@ -16,9 +16,13 @@ class ProfileController extends Controller
      */
     public function indexAction(User $user)
     {
-        return $this->render('@App/Profile/index.html.twig', array(
-            'user' => $user
-        ));
+        $currentUser = $this->getUser();
+        
+        if ($user->getId() === $currentUser->getId()) {
+            return $this->redirectToRoute('myProfile');
+        }
+        
+        return $this->getProfilePage($user);
     }
 
     /**
@@ -26,7 +30,13 @@ class ProfileController extends Controller
      * @Method({"GET", "POST"})
      */
     public function getMyProfileAction() {
-
+        $currentUser = $this->getUser();
+        
+        if ($currentUser) {
+            return $this->getProfilePage($currentUser);
+        }
+        
+        return $this->redirectToRoute('login');
     }
 
     /**
@@ -55,6 +65,12 @@ class ProfileController extends Controller
 
         return $this->render('@App/Profile/index.html.twig', array(
             'user' => $user
+        ));
+    }
+    
+    protected function getProfilePage(User $user) {
+        return $this->render('@App/Profile/index.html.twig', array(
+                    'user' => $user
         ));
     }
 

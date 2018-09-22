@@ -9,7 +9,7 @@ use AppBundle\Entity\User;
 /**
  * Chicken
  *
- * @ORM\Table(name="chicken")
+ * @ORM\Table(name="app_chicks")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\ChickenRepository")
  */
 class Chick
