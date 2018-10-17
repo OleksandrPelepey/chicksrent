@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use AppBundle\Entity\User;
@@ -18,7 +19,7 @@ class ProfileController extends Controller
     {
         $currentUser = $this->getUser();
         
-        if ($user->getId() === $currentUser->getId()) {
+        if ($currentUser && $user->getId() === $currentUser->getId()) {
             return $this->redirectToRoute('myProfile');
         }
         
@@ -27,54 +28,54 @@ class ProfileController extends Controller
 
     /**
      * @Route("/profile", name="myProfile")
-     * @Method({"GET", "POST"})
+     * 
+     * @IsGranted("IS_AUTHENTICATED_FULLY")
      */
-    public function getMyProfileAction() {
-        $currentUser = $this->getUser();
-        
-        if ($currentUser) {
-            return $this->getProfilePage($currentUser);
-        }
-        
-        return $this->redirectToRoute('login');
+    public function getMyProfileAction() 
+    {
+        return $this->getProfilePage( $this->getUser() );
     }
 
     /**
-     * @Route("/profile/{user_id}/edit", name="editProfile")
-     * @Security("(user && (user.getId() == user_id)) || has_role('ROLE_ADMIN')")
+     * @Route("/profile/edit/{editedUser}", name="editProfile")
+     * 
+     * @IsGranted("IS_AUTHENTICATED_FULLY")
      */
-    public function editAction($user_id = null)
+    public function editAction(User $editedUser)
     {
+        return $this->getEditUserPage($editedUser);
+    }
+
+    /**
+     * @Route("/profile/edit", name="editCurrentProfile")
+     * 
+     * @IsGranted("IS_AUTHENTICATED_FULLY")
+     */
+    public function editCurrentAction() {
         $currentUser = $this->getUser();
 
-        if ($user_id === null || $user_id == $currentUser->getId()) {
-            $user = $currentUser;
-        } else {
-            $entityManager = $this->getDoctrine()->getManager();
+        return $this->getEditUserPage($currentUser);
+    }
+    
+    protected function getEditUserPage(User $editedUser) {
+        $this->denyAccessUnlessGranted('edit', $editedUser);
 
-            $user = $entityManager
-                ->getRepository(User::class)
-                ->findOneBy([
-                    'id' => $user_id
-                ]);
-        }
+        return $this->render('@App/Profile/index.html.twig', array(
+            'user' => $editedUser
+        ));
+    }
 
-        if ($user === null) {
-            throw $this->createNotFoundUserExpertion($user_id);
-        }
-
+    protected function getProfilePage(User $user) 
+    {
         return $this->render('@App/Profile/index.html.twig', array(
             'user' => $user
         ));
     }
-    
-    protected function getProfilePage(User $user) {
-        return $this->render('@App/Profile/index.html.twig', array(
-                    'user' => $user
-        ));
-    }
 
-    protected function createNotFoundUserExpertion($user_id) {
-        return $this->createNotFoundException(sprintf('User with id %d was not found', $user_id));
+    protected function createNotFoundUserExpertion() 
+    {
+        return $this->createNotFoundException(
+            sprintf('User was not found')
+        );
     }
 }

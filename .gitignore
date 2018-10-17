@@ -18,3 +18,5 @@
 /.idea/
 /nbproject/private/
 /nbproject/
+/public/images/
+/public/images/.gitkeep

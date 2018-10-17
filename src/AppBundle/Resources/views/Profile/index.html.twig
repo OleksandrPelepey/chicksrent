@@ -18,6 +18,8 @@
                             <h5 class="mt-2">{{ user.username }}</h5> 
                         </div>
                         
+                        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                        
                         <hr>
                         
                         <div>
@@ -26,10 +28,12 @@
                             <span class="display-block">{{user.email}}</span>
                         </div>
                         
+                        {% endif %}
+                        
                     </div>
                         
                     <div class="card-footer">
-                        <a href="{{path("editProfile", {'user_id': user.id})}}">Edit</a>
+                        <a href="{{path("editProfile", {'editedUser': user.id})}}">Edit</a>
                     </div>
                 </div>
                     
